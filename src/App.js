@@ -1,7 +1,7 @@
 import React from "react";
-import { Typography, TextField, CircularProgress, IconButton } from '@material-ui/core'
+import { Typography, TextField, CircularProgress, IconButton, Button, Table, TableBody, TableHead, TableRow, TableCell, Fab } from '@material-ui/core'
 import { store } from "./store";
-import { action, toJS } from "mobx";
+import { action, runInAction, toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { get_loader_for_class_instance } from "./async_loaders";
 import { toBase64 } from "./helpers";
@@ -9,43 +9,32 @@ import { toBase64 } from "./helpers";
 export const App = observer(() => {
   return (
     <div style={{
-      backgroundColor: 'lightslategray', width: '100vw', height: '100vh',
-      display: 'grid', placeItems: 'center'
+      backgroundColor: '#ddd', width: '100vw', height: '100vh',
+      display: 'grid',
+      // placeItems: 'center'
     }}>
-      <div style={{ width: '75vw', height: '90vh', backgroundColor: 'lightgray', borderRadius: '50px', display: 'grid', gap: '10px', padding: '25px' }}>
 
-        <TextField
-          disabled={store.files.length > 0}
-          style={{ marginTop: '50px' }}
-          fullWidth variant='outlined'
-          value={store.bin_name}
-          onChange={action(e => store.bin_name = e.target.value)}
-        />
+      <center style={{ display: 'grid', alignItems:'start', margin: '5%', gridTemplateRows: '60px 60px auto' }}>
+        <Typography variant='h5'>Pic 2 Pc</Typography>
+        <GalleryName />
+        <ImageTable />
 
 
-        {
-          get_loader_for_class_instance(store, store.upload) ? <CircularProgress /> :
-
-            <input
-
-              accept="image/*" capture="camera" multiple
-              type='file'
-              onChange={action(async e => {
-                const files = await Promise.all(Array.from(e.target.files).map(file => toBase64(file)))
-                store.files = [...store.files, ...files]
-              })}
-            />
-
-        }
-
-        <h3 style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, 150px)', gridTemplateRows: 'repeat(auto-fill, 150px)' }}>{store.files.map((el, i) => {
-          return <div style={{
-            display: 'grid',
-            placeItems: 'center',
-            border: '1px dashed gray',
-            gridTemplateColumns: '100px 50px',
-            gridTemplateRows: '50px 50px 50px'
-          }}>
+      </center>
+      <ImageUploader />
+      <br />
+      <br />
+      {/* <h3 style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, 150px)', gridTemplateRows: 'repeat(auto-fill, 150px)' }}>{store.files
+        .map((el, i) => {
+          return <div
+            key={i}
+            style={{
+              display: 'grid',
+              placeItems: 'center',
+              border: '1px dashed gray',
+              gridTemplateColumns: '100px 50px',
+              gridTemplateRows: '50px 50px 50px'
+            }}>
             <IconButton style={{
               width: '50px',
               height: '50px',
@@ -62,7 +51,7 @@ export const App = observer(() => {
               width: '150px',
               height: '150px',
               objectFit: 'contain'
-            }} key={i} src={el} />
+            }} src={el} />
             <Typography style={{
               color: 'white',
               fontWeight: 'bold',
@@ -72,8 +61,63 @@ export const App = observer(() => {
             }}>{i + 1}/{store.files.length}</Typography>
             cp 1/2 x
           </div>
-        })}</h3>
-      </div>
+        })}</h3> */}
     </div>
+
   );
+})
+
+const GalleryName = observer(() => {
+  return <TextField
+    label='Gallery Name'
+    fullWidth variant='outlined'
+    value={store.gallery_name || ''}
+    onChange={action(e => store.gallery_name = e.target.value)}
+  />
+
+})
+
+const ImageUploader = observer(() => {
+  return <>
+    <input
+      id='image_uploader'
+      accept="image/*" capture="camera"
+      // multiple
+      hidden
+      type='file'
+      onChange={action(async e => {
+        const files = await Promise.all(Array.from(e.target.files).map(file => toBase64(file)))
+        runInAction(() => {
+          store.files = [/*...store.files,*/ ...files]
+        })
+      })}
+    />
+
+    <Fab style={{ position: 'absolute', bottom: '5%', right: '10%' }} onClick={() => document.getElementById('image_uploader').click()}>
+      <h2>+</h2>
+    </Fab>
+
+  </>
+})
+
+const ImageTable = observer(() => {
+  return <Table>
+    <TableHead><TableRow>
+      <TableCell>ID</TableCell>
+      <TableCell>Picture</TableCell>
+      <TableCell>Actions</TableCell>
+    </TableRow></TableHead>
+    <TableBody>
+      {store.files.map((el, i) => <ImageRow key={i} file_index={i} />)}
+    </TableBody>
+  </Table>
+
+})
+
+const ImageRow = observer(({ file_index }) => {
+  return <TableRow>
+    <TableCell>hello</TableCell>
+    <TableCell>there</TableCell>
+    <TableCell>copy delete</TableCell>
+  </TableRow>
 })
