@@ -1,10 +1,9 @@
-import React from "react";
-import { Typography, TextField, CircularProgress, IconButton, Button, Table, TableBody, TableHead, TableRow, TableCell, Fab } from '@material-ui/core'
-import { store } from "./store";
-import { action, runInAction, toJS } from "mobx";
+import { Fab, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from '@material-ui/core';
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { get_loader_for_class_instance } from "./async_loaders";
+import React from "react";
 import { toBase64 } from "./helpers";
+import { handle_update_gallery_id, store } from "./store";
 
 export const App = observer(() => {
   return (
@@ -71,8 +70,8 @@ const GalleryName = observer(() => {
   return <TextField
     label='Gallery Name'
     fullWidth variant='outlined'
-    value={store.gallery_name || ''}
-    onChange={action(e => store.gallery_name = e.target.value)}
+    value={store.gallery_id || ''}
+    onChange={handle_update_gallery_id}
   />
 
 })
@@ -86,10 +85,13 @@ const ImageUploader = observer(() => {
       hidden
       type='file'
       onChange={action(async e => {
-        const files = await Promise.all(Array.from(e.target.files).map(file => toBase64(file)))
-        runInAction(() => {
-          store.files = [/*...store.files,*/ ...files]
-        })
+        const new_pictures = await Promise.all(Array.from(e.target.files).map(file => toBase64(file)))
+        store.ws_send(new_pictures.map((base_64) => {
+          return {
+            gallery_id: store.gallery_id,
+            base_64
+          }
+        }))
       })}
     />
 
@@ -108,16 +110,16 @@ const ImageTable = observer(() => {
       <TableCell>Actions</TableCell>
     </TableRow></TableHead>
     <TableBody>
-      {store.files.map((el, i) => <ImageRow key={i} file_index={i} />)}
+      {store.pictures.map((el, i) => <ImageRow key={i} picture_index={i} />)}
     </TableBody>
   </Table>
 
 })
 
-const ImageRow = observer(({ file_index }) => {
+const ImageRow = observer(({ picture_index }) => {
   return <TableRow>
-    <TableCell>hello</TableCell>
-    <TableCell>there</TableCell>
-    <TableCell>copy delete</TableCell>
+    <TableCell>{store.pictures[picture_index].id}</TableCell>
+    <TableCell><img style={{objectFit: 'contain', width: '100px', height: '100px'}} src={store.pictures[picture_index].base_64} alt="upload" /></TableCell>
+    <TableCell>x</TableCell>
   </TableRow>
 })
