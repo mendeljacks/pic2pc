@@ -120,6 +120,6 @@ const ImageRow = observer(({ picture_index }) => {
   return <TableRow>
     <TableCell>{store.pictures[picture_index].id}</TableCell>
     <TableCell><img style={{objectFit: 'contain', width: '100px', height: '100px'}} src={store.pictures[picture_index].base_64} alt="upload" /></TableCell>
-    <TableCell>x</TableCell>
+    <TableCell>x copy</TableCell>
   </TableRow>
 })
